@@ -24,6 +24,7 @@ public class UIController : MonoBehaviour
     public Button shootBtn;
     public Button jumpBtn;
     public Button cameraZoomButton;
+    public Button gunSwitchingButton;
     private void Awake()
     {
         instance = this;

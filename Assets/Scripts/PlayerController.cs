@@ -29,7 +29,7 @@ public class PlayerController : MonoBehaviourPunCallbacks
     private bool canZoom;
     public Gun[] allGuns;
     private int selectedGun;
-    private float muzzleDisplayTime=0.2f;
+    private float muzzleDisplayTime = 0.2f;
     private float muzzleCounter;
     private bool isShooting;
     private Image zoomBtnImage;
@@ -60,6 +60,7 @@ public class PlayerController : MonoBehaviourPunCallbacks
             UIController.instance.shootBtn.onClick.AddListener(OnClickShootButton);
             UIController.instance.jumpBtn.onClick.AddListener(OnClickJumpButton);
             UIController.instance.cameraZoomButton.onClick.AddListener(AdsZoom);
+            UIController.instance.gunSwitchingButton.onClick.AddListener(GunSwitching);
             zoomBtnImage = UIController.instance.cameraZoomButton.GetComponent<Image>();
             playerModel.SetActive(false);
             UIController.instance.healthSlider.maxValue = maxHealth;
@@ -86,7 +87,7 @@ public class PlayerController : MonoBehaviourPunCallbacks
         {
             return;
         }
-      
+
         if (allGuns[selectedGun].muzleFlash.activeInHierarchy)
         {
             muzzleCounter -= Time.deltaTime;
@@ -102,10 +103,6 @@ public class PlayerController : MonoBehaviourPunCallbacks
             heatCounter = 0;
         }
         UIController.instance.weaponTempSlider.value = heatCounter;
-        if (!UIController.instance.isPaused)
-        {
-            GunSwitching();
-        }
         Debug.Log("Grounded: " + isGrounded + " Speed " + moveDir.magnitude);
         anim.SetBool("grounded", isGrounded);
         anim.SetFloat("speed", moveDir.magnitude);
@@ -130,11 +127,11 @@ public class PlayerController : MonoBehaviourPunCallbacks
 
     public void GetMobileTouchPositions()
     {
+        PlayerMove();
         Touch touch = Input.GetTouch(0);
         if (touch.position.x < (screenWidth / 2))
         {
             joyStick.gameObject.SetActive(true);
-            PlayerMove();
         }
         else
         {
@@ -238,37 +235,14 @@ public class PlayerController : MonoBehaviourPunCallbacks
 
     void GunSwitching()
     {
-        if (Input.GetAxisRaw("Mouse ScrollWheel") > 0)
-        {
+       
             selectedGun++;
             if (selectedGun >= allGuns.Length)
             {
                 selectedGun = 0;
             }
-            // SwitchGun();
+         
             photonView.RPC("SetGun", RpcTarget.All, selectedGun);
-
-        }
-        else if (Input.GetAxisRaw("Mouse ScrollWheel") < 0)
-        {
-            selectedGun--;
-            if (selectedGun < 0)
-            {
-                selectedGun = allGuns.Length - 1;
-            }
-            //  SwitchGun();
-            photonView.RPC("SetGun", RpcTarget.All, selectedGun);
-
-        }
-        for (int i = 0; i < allGuns.Length; i++)
-        {
-            if (Input.GetKey((i + 1).ToString()))
-            {
-                selectedGun = i;
-                //   SwitchGun();
-                photonView.RPC("SetGun", RpcTarget.All, selectedGun);
-            }
-        }
     }
     void SwitchGun()
     {
@@ -368,7 +342,7 @@ public class PlayerController : MonoBehaviourPunCallbacks
             }
             else
             {
-             
+
                 GameObject bulletImpactObj = Instantiate(bulletImpact, hit.point + (hit.normal * 0.002f), Quaternion.LookRotation(hit.normal, Vector3.up));
                 Destroy(bulletImpactObj, 10f);
             }
